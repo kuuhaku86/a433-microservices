@@ -3,6 +3,8 @@ pipeline {
     environment {
         GITHUB_PAT = credentials('github-token')
         // Set PATH globally. env.WORKSPACE ensures absolute paths are resolved by Groovy.
+        GOROOT = "${env.WORKSPACE}/bin/go"
+        GOPATH = "${env.WORKSPACE}/go"
         PATH = "${env.WORKSPACE}/bin/go/bin:${env.WORKSPACE}/bin:${env.PATH}"
     }
     stages {
@@ -32,7 +34,7 @@ pipeline {
         }
         stage('test-app') {
             steps {
-                sh 'go test -v -short --count=1 $(go list ./...)'
+                sh 'go test -v -short --count=1 ./...'
             }
         }
         stage('build-app-karsajobs') {
