@@ -1,26 +1,40 @@
 pipeline {
-    agent { 
-        docker { 
-            image 'golang:1.18'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        } 
-    }
+    agent any
     environment {
         GITHUB_PAT = credentials('github-token')
+        // Define a local path for tools
+        PATH = "${workspace}/bin:${env.PATH}"
     }
     stages {
+        stage('setup-tools') {
+            steps {
+                // Install Hadolint and Go binaries locally in the workspace if not present
+                sh '''
+                mkdir -p bin
+                if [ ! -f bin/hadolint ]; then
+                    curl -sSfL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o bin/hadolint
+                    chmod +x bin/hadolint
+                fi
+                if [ ! -d bin/go ]; then
+                    curl -sSfL https://go.dev/dl/go1.18.linux-amd64.tar.gz | tar -xz -C bin/
+                fi
+                '''
+            }
+        }
         stage('lint-dockerfile') {
             steps {
                 sh '''
-                curl -sSfL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
-                chmod +x /usr/local/bin/hadolint
+                export PATH="${workspace}/bin/go/bin:${workspace}/bin:${PATH}"
                 hadolint Dockerfile
                 '''
             }
         }
         stage('test-app') {
             steps {
-                sh 'go test -v -short --count=1 $(go list ./...)'
+                sh '''
+                export PATH="${workspace}/bin/go/bin:${workspace}/bin:${PATH}"
+                go test -v -short --count=1 $(go list ./...)
+                '''
             }
         }
         stage('build-app-karsajobs') {
