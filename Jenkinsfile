@@ -27,7 +27,7 @@ pipeline {
         }
         stage('build-app-karsajobs-ui') {
             steps {
-                sh 'sudo bash build_push_image_karsajobs_ui.sh'
+                sh 'bash build_push_image_karsajobs_ui.sh'
             }
         }
     }
