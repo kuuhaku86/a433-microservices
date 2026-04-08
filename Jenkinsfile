@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:latest'
+        }
+    }
     environment {
         GITHUB_PAT = credentials('github-token')
         PATH = "${env.WORKSPACE}/.bin:${env.PATH}"
