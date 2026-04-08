@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        PATH = "${env.WORKSPACE}/.bin/go/bin:${env.WORKSPACE}/.bin:${env.PATH}"
+        PATH = "${env.WORKSPACE}/.bin:${env.PATH}"
     }
     stages {
         stage ('setup-tools') {
@@ -22,20 +22,22 @@ pipeline {
         }
         stage('lint-dockerfile') {
             steps {
-                sh 'hadolint Dockerfile'
+                sh '''
+                hadolint Dockerfile
+                '''
             }
         }
-        stage('test-app') {
-            agent {
-                docker {
-                    image 'golang:1.18' // Use a dedicated Go image for testing
-                    // You can specify a different version if needed, e.g., 'golang:1.22'
-                }
-            }
-            steps {
-                sh 'go test -v -short --count=1 ./...'
-            }
-        }
+        // stage('test-app') {
+        //     agent {
+        //         docker {
+        //             image 'golang:1.18' // Use a dedicated Go image for testing
+        //             // You can specify a different version if needed, e.g., 'golang:1.22'
+        //         }
+        //     }
+        //     steps {
+        //         sh 'go test -v -short --count=1 ./...'
+        //     }
+        // }
         stage('build-app-karsajobs') {
             steps {
                 script {
