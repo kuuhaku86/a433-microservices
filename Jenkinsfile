@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        PATH = "${env.WORKSPACE}/.bin:${env.PATH}"
+        PATH = "${env.WORKSPACE}/.bin/go/bin:${env.WORKSPACE}/.bin:${env.PATH}"
     }
     stages {
         stage ('setup-tools') {
@@ -17,6 +17,11 @@ pipeline {
                     curl -sSfL https://download.docker.com/linux/static/stable/x86_64/docker-27.1.1.tgz | tar -xz -C .bin/ --strip-components=1 docker/docker
                     chmod +x .bin/docker
                 fi
+
+                if [ ! -d .bin/go ]; then
+                    echo "Downloading Go 1.18.10..."
+                    curl -sSfL https://go.dev/dl/go1.18.10.linux-amd64.tar.gz | tar -xz -C .bin/
+                fi
                 '''
             }
         }
@@ -28,22 +33,8 @@ pipeline {
             }
         }
         stage('test-app') {
-            agent {
-                kubernetes {
-                    yaml '''
-spec:
-  containers:
-  - name: golang
-    image: golang:1.18
-    command: ["cat"]
-    tty: true
-'''
-                }
-            }
             steps {
-                container('golang') {
-                    sh 'go test -v -short --count=1 ./...'
-                }
+                sh 'go test -v -short --count=1 ./...'
             }
         }
         stage('build-app-karsajobs') {
