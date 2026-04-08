@@ -1,14 +1,10 @@
 pipeline {
     agent any
     environment {
-        GITHUB_PAT = credentials('github-token')
-        // Set PATH globally. env.WORKSPACE ensures absolute paths are resolved by Groovy.
-        GOROOT = "${env.WORKSPACE}/.bin/go"
-        GOPATH = "${env.WORKSPACE}/.go"
         PATH = "${env.WORKSPACE}/.bin/go/bin:${env.WORKSPACE}/.bin:${env.PATH}"
     }
     stages {
-        stage('setup-tools') {
+        stage ('setup-tools') {
             steps {
                 sh '''
                 mkdir -p .bin
@@ -16,12 +12,9 @@ pipeline {
                     curl -sSfL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o .bin/hadolint
                     chmod +x .bin/hadolint
                 fi
-                if [ ! -d .bin/go ]; then
-                    curl -sSfL https://go.dev/dl/go1.18.linux-amd64.tar.gz | tar -xz -C .bin/
-                    chmod -R +x .bin/go/bin
-                fi
+
                 if [ ! -f .bin/docker ]; then
-                    curl -sSfL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.9.tgz | tar -xz -C .bin/ --strip-components=1 docker/docker
+                    curl -sSfL https://download.docker.com/linux/static/stable/x86_64/docker-27.1.1.tgz | tar -xz -C .bin/ --strip-components=1 docker/docker
                     chmod +x .bin/docker
                 fi
                 '''
@@ -33,14 +26,33 @@ pipeline {
             }
         }
         stage('test-app') {
+            agent {
+                docker {
+                    image 'golang:1.18' // Use a dedicated Go image for testing
+                    // You can specify a different version if needed, e.g., 'golang:1.22'
+                }
+            }
             steps {
                 sh 'go test -v -short --count=1 ./...'
             }
         }
         stage('build-app-karsajobs') {
             steps {
-                sh 'bash build_push_image_karsajobs.sh'
+                script {
+                    // Ensure we don't include unnecessary binaries in the build context
+                    sh 'rm -rf .bin .go'
+                    
+                    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_PAT')]) {
+                        sh 'bash build_push_image_karsajobs.sh'
+                    }
+                }
             }
+        }
+    }
+    post {
+        always {
+            // Clean up the workspace after each build to ensure a clean state
+            deleteDir()
         }
     }
 }
