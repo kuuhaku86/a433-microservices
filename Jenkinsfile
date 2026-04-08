@@ -3,14 +3,14 @@ pipeline {
     stages {
         // Removed 'setup-tools' stage as tools will be provided by Docker agents
         stage('lint-dockerfile') {
-            agent {
-                docker {
-                    image 'hadolint/hadolint:latest-debian' // Use a dedicated Hadolint image
-                    // No Docker socket mount needed for linting
-                }
-            }
             steps {
-                sh 'hadolint Dockerfile'
+                sh '''
+                mkdir -p .bin
+                if [ ! -f .bin/hadolint ]; then
+                    curl -sSfL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o .bin/hadolint
+                    chmod +x .bin/hadolint
+                fi
+                '''
             }
         }
         stage('build-app-karsajobs-ui') {
