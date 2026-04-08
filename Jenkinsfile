@@ -1,7 +1,10 @@
 pipeline {
-    agent any // No default agent, each stage defines its own environment
+    agent any 
+    environment {
+        // Ensure the downloaded binaries are available in the PATH for all stages
+        PATH = "${env.WORKSPACE}/.bin:${env.PATH}"
+    }
     stages {
-        // Removed 'setup-tools' stage as tools will be provided by Docker agents
         stage('lint-dockerfile') {
             steps {
                 sh '''
@@ -10,6 +13,8 @@ pipeline {
                     curl -sSfL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o .bin/hadolint
                     chmod +x .bin/hadolint
                 fi
+                
+                hadolint Dockerfile
                 '''
             }
         }
@@ -25,6 +30,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_PAT')]) {
+                        sh '''
+                            if [ ! -f .bin/docker ]; then
+                                curl -sSfL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.9.tgz | tar -xz -C .bin/ --strip-components=1 docker/docker
+                                chmod +x .bin/docker
+                            fi
+                        '''
                         sh 'bash build_push_image_karsajobs_ui.sh'
                     }
                 }
