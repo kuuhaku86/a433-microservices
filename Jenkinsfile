@@ -29,14 +29,6 @@ pipeline {
             }
         }
         stage('build-app-karsajobs-ui') {
-            agent {
-                docker {
-                    image 'docker:latest' // Provides an up-to-date Docker client
-                    // Mount the host's Docker socket to allow the client inside this container
-                    // to communicate with the Docker daemon running on the Minikube host.
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
             steps {
                 script {
                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_PAT')]) {
