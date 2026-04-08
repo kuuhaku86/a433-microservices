@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         PATH = "${env.WORKSPACE}/.bin/go/bin:${env.WORKSPACE}/.bin:${env.PATH}"
+        CGO_ENABLED = '0'
     }
     stages {
         stage ('setup-tools') {
