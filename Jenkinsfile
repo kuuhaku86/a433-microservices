@@ -29,13 +29,21 @@ pipeline {
         }
         stage('test-app') {
             agent {
-                docker {
-                    image 'golang:1.18' // Use a dedicated Go image for testing
-                    // You can specify a different version if needed, e.g., 'golang:1.22'
+                kubernetes {
+                    yaml '''
+spec:
+  containers:
+  - name: golang
+    image: golang:1.18
+    command: ["cat"]
+    tty: true
+'''
                 }
             }
             steps {
-                sh 'go test -v -short --count=1 ./...'
+                container('golang') {
+                    sh 'go test -v -short --count=1 ./...'
+                }
             }
         }
         stage('build-app-karsajobs') {
