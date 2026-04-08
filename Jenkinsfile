@@ -15,7 +15,7 @@ pipeline {
                 fi
                 
                 if [ ! -f .bin/docker ]; then
-                    curl -sSfL https://download.docker.com/linux/static/stable/x86_64/docker-24.0.5.tgz | tar -xz -C .bin/ --strip-components=1 docker/docker
+                    curl -sSfL https://download.docker.com/linux/static/stable/x86_64/docker-27.1.1.tgz | tar -xz -C .bin/ --strip-components=1 docker/docker
                     chmod +x .bin/docker
                 fi
                 '''
