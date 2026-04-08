@@ -5,7 +5,7 @@ pipeline {
         PATH = "${env.WORKSPACE}/.bin:${env.PATH}"
     }
     stages {
-        stage ('preparation') {
+        stage ('setup-tools') {
             steps {
                 sh '''
                 mkdir -p .bin
