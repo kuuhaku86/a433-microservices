@@ -1,9 +1,5 @@
 pipeline {
     agent none // No default agent, each stage defines its own environment
-    environment {
-        // GITHUB_PAT will be handled by withCredentials for better security
-        // PATH manipulation for .bin is no longer needed as tools are in dedicated containers
-    }
     stages {
         // Removed 'setup-tools' stage as tools will be provided by Docker agents
         stage('lint-dockerfile') {
