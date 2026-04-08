@@ -1,5 +1,5 @@
 pipeline {
-    agent none // No default agent, each stage defines its own environment
+    agent any // No default agent, each stage defines its own environment
     stages {
         // Removed 'setup-tools' stage as tools will be provided by Docker agents
         stage('lint-dockerfile') {
