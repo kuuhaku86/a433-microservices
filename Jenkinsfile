@@ -39,9 +39,6 @@ pipeline {
         stage('build-app-karsajobs') {
             steps {
                 script {
-                    // Ensure we don't include unnecessary binaries in the build context
-                    sh 'rm -rf .bin .go'
-                    
                     withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_PAT')]) {
                         sh 'bash build_push_image_karsajobs.sh'
                     }
